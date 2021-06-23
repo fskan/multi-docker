@@ -1,0 +1,20 @@
+language: generic
+services:
+  - docker
+
+before_install:
+  - docker build -t darkidas/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true darkidas/react-test npm test
+
+after_success:
+  - docker build -t darkidas/multi-client ./client
+  - docker build -t darkidas/multi-nginx ./nginx
+  - docker build -t darkidas/multi-server ./server
+  - docker build -t darkidas/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push darkidas/multi-client
+  - docker push darkidas/multi-nginx
+  - docker push darkidas/multi-server
+  - docker push darkidas/multi-worker
